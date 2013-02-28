@@ -69,6 +69,7 @@ public class Crawl extends Configured implements Tool {
     int depth = 5;
     long topN = Long.MAX_VALUE;
     String solrUrl = null;
+    int numFetchers = -1;  //FF - added command line arg for numFetchers
     
     for (int i = 0; i < args.length; i++) {
       if ("-dir".equals(args[i])) {
@@ -86,6 +87,10 @@ public class Crawl extends Configured implements Tool {
       } else if ("-solr".equals(args[i])) {
         solrUrl = args[i + 1];
         i++;
+      //FF - added command line arg for numFetchers
+      } else if ("-numFetchers".equals(args[i])) {
+	numFetchers = Integer.parseInt(args[i+1]);
+	i++;
       } else if (args[i] != null) {
         rootUrlDir = new Path(args[i]);
       }
@@ -127,8 +132,11 @@ public class Crawl extends Configured implements Tool {
     injector.inject(crawlDb, rootUrlDir);
     int i;
     for (i = 0; i < depth; i++) {             // generate new segment
-      Path[] segs = generator.generate(crawlDb, segments, -1, topN, System
+      //FF - added command line arg for numFetchers
+      Path[] segs = generator.generate(crawlDb, segments, numFetchers, topN, System
           .currentTimeMillis());
+      // Path[] segs = generator.generate(crawlDb, segments, -1, topN, System
+      //     .currentTimeMillis());
       if (segs == null) {
         LOG.info("Stopping at depth=" + i + " - no more URLs to fetch.");
         break;
